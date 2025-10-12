@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>The Architecture of Agency - Gordi Aalipour</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advanced planning and dependency resolution in LLM tool orchestration">
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- MathJax for equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --accent-color: #3b82f6;
+      --text-dark: #1f2937;
+      --text-light: #6b7280;
+      --bg-light: #f9fafb;
+      --border-color: #e5e7eb;
+      --code-bg: #f3f4f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      line-height: 1.8;
+      background-color: #ffffff;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      color: var(--primary-color) !important;
+      font-size: 1.25rem;
+    }
+
+    .nav-link {
+      color: var(--text-dark) !important;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    /* Article Header */
+    .article-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4rem 0 3rem;
+      margin-top: 56px;
+    }
+
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .article-meta {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* Article Content */
+    .article-content {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+
+    .article-content h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-dark);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .article-content h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text-dark);
+    }
+
+    .article-content h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--secondary-color);
+    }
+
+    .article-content p {
+      margin-bottom: 1.5rem;
+      font-size: 1.05rem;
+    }
+
+    .article-content ul, .article-content ol {
+      margin-bottom: 1.5rem;
+      padding-left: 2rem;
+    }
+
+    .article-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Math equations */
+    .MathJax {
+      font-size: 1.1em !important;
+    }
+
+    /* Tables */
+    .article-content table {
+      width: 100%;
+      margin: 2rem 0;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .article-content th {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .article-content td {
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .article-content tr:nth-child(even) {
+      background-color: var(--bg-light);
+    }
+
+    .table-caption {
+      font-weight: 600;
+      margin-top: 0.5rem;
+      margin-bottom: 2rem;
+      color: var(--text-dark);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Highlight boxes */
+    .definition-box {
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary-color);
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border-radius: 4px;
+    }
+
+    .definition-box strong {
+      color: var(--primary-color);
+    }
+
+    /* Code blocks */
+    code {
+      font-family: 'Fira Code', monospace;
+      background-color: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--text-dark);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      margin-top: 5rem;
+    }
+
+    footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .article-title {
+        font-size: 1.75rem;
+      }
+
+      .article-content {
+        padding: 0 1rem;
+      }
+
+      .article-content h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="../index.html">Gordi (Ghodrat) Aalipour</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#publications">Publications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#resources">Resources</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../blog.html">Blog</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Article Header -->
+<div class="article-header">
+  <div class="container">
+    <h1 class="article-title">The Architecture of Agency: Advanced Planning and Dependency Resolution in LLM Tool Orchestration</h1>
+    <div class="article-meta">
+      <i class="fas fa-calendar me-2"></i>October 12, 2025
+      <span class="mx-3">|</span>
+      <i class="fas fa-user me-2"></i>Gordi Aalipour
+      <span class="mx-3">|</span>
+      <i class="fas fa-clock me-2"></i>20 min read
+    </div>
+  </div>
+</div>
+
+<!-- Article Content -->
+<article class="article-content">
+
+<h2>I. Foundational Principles of Tool Orchestration</h2>
+
+<p>The integration of large language models (LLMs) into autonomous systems marks a significant architectural shift in artificial intelligence. This evolution moves past simple applications, such as Retrieval-Augmented Generation (RAG), toward agentic systems where the LLM functions as the central "brain" or orchestrator. This orchestrator is responsible for decomposing complex user requests into executable, multi-step plans by coordinating specialized external functions, often referred to as tools \(t_i\) or APIs.</p>
+
+<h3>I.A. The Agentic Paradigm and the Shift from Retrieval to Planning</h3>
+
+<p>While LLMs excel at generating natural language and performing System I tasks—such as pattern recognition and flexible generation—they frequently encounter challenges with long-horizon, structured reasoning, which is classified as System II cognition. This limitation creates a planning bottleneck, leading to the generation of unreliable plans, especially as the required number of steps scales up. The fundamental tension arises from bridging the LLM's inherently non-deterministic nature with the strict, deterministic requirements of external tools (functions, APIs) that operate under a fixed input/output contract.</p>
+
+<p>To resolve this issue, robust agentic systems integrate formal planning methods. This strategy effectively offloads the rigid, constraint-adherence aspects of System II cognition to established symbolic AI constructs. By constraining the LLM's actions through formalized mechanisms, the overall system retains the LLM's generative strengths while achieving the necessary structure and validity required for execution.</p>
+
+<h3>I.B. Formalizing the Tool Dependency Graph (TDG)</h3>
+
+<p>The prerequisite for any structured execution is the formalization of relationships between available tools through a Tool Dependency Graph (TDG), defined as \(G = (T, E)\).</p>
+
+<div class="definition-box">
+  <p><strong>Definition:</strong> Let \(T = \{t_1, t_2, \ldots, t_n\}\) be the finite set of available tools, representing the node set of the graph. A directed edge \((t_i, t_j) \in E \subseteq T \times T\) indicates a dependency where the output or functionality of tool \(t_i\) is required as a necessary input or precondition for the execution of tool \(t_j\).</p>
+</div>
+
+<p>Effective tool planning requires treating each tool execution as an action that transforms the system's current state \(s \in S\) into a subsequent state \(s' \in S\), where \(S\) is the state space. The application of tool \(t_i\) defines a transition function \(\text{Apply}(t_i, s) = s'\). The dependencies within the graph ensure a logically valid trajectory through this state space, moving from the initial conditions defined by the user request to the final goal state.</p>
+
+<p>Traditional planning often relies on topological sorting of the TDG, which is generally structured as a Directed Acyclic Graph (DAG). However, topological sorting yields only a sequential, total order—a significant limitation in dynamic, resource-constrained environments. This approach fails to incorporate crucial operational metrics such as opportunities for parallel execution, computational cost, latency considerations, or the contextual necessity of a tool.</p>
+
+<p>Consequently, the definition of a TDG edge is evolving from a simple functional prerequisite to an explicit causal link. Modeling dependencies causally is essential for failure recovery and system robustness. When a subsequent tool fails, the agent can efficiently diagnose whether the failure was due to an internal execution error or an incomplete or faulty state change produced by a preceding tool.</p>
+
+<h2>II. Methodologies for Robust TDG Construction</h2>
+
+<p>The reliability and scalability of agentic planning hinge critically on the accuracy and completeness of the TDG. Construction methodologies range from manual symbolic definition to dynamic neuro-symbolic inference.</p>
+
+<h3>II.A. Explicit Symbolic Modeling (Precondition-Effect Formalism)</h3>
+
+<p>The most rigorous approach involves defining tools using a formal symbolic framework, often adapted from classical automated planning, such as the Precondition-Effect-Result (P-E-R) schema.</p>
+
+<p>Each tool \(t_i \in T\) is formally described by three components:</p>
+
+<div class="definition-box">
+  <p>\[t_i = \langle \text{Pre}(t_i), \text{Add}(t_i), \text{Del}(t_i) \rangle\]</p>
+  <ul>
+    <li><strong>Preconditions \(\text{Pre}(t_i)\):</strong> A set of state predicates that must be true in state \(s\) for \(t_i\) to be executable. This is denoted by the satisfiability condition \(s \models \text{Pre}(t_i)\).</li>
+    <li><strong>Add Effects \(\text{Add}(t_i)\):</strong> A set of state predicates that become true in the resulting state \(s'\).</li>
+    <li><strong>Delete Effects \(\text{Del}(t_i)\):</strong> A set of state predicates that become false in the resulting state \(s'\).</li>
+  </ul>
+</div>
+
+<p>The state transition is then formally defined as:</p>
+
+<p>\[s' = \text{Apply}(t_i, s) = (s \setminus \text{Del}(t_i)) \cup \text{Add}(t_i)\]</p>
+
+<p>A notable advancement is <strong>Precondition Grounding</strong>, where the LLM planner autonomously generates and validates these necessary preconditions during execution. This promotes scalability and furnishes formal, explicit feedback for recovery mechanisms during failure. For constraint enforcement, frameworks leverage machine-readable schema definitions, such as JSONSchema, to guarantee structural output. The description fields within these schemas function as a "semantic compass," guiding the LLM's internal reasoning.</p>
+
+<p>Furthermore, integrating formal language constraints, as demonstrated by the Formal-LLM framework, allows an external automaton to supervise the LLM's generation process, significantly increasing plan validity and executability. This architecture positions the LLM not just as an interpreter of a planning domain but as a synthesizer that translates unstructured requirements into the formal constraints needed for structural enforcement.</p>
+
+<h3>II.B. Automated and LLM-Inferred Graph Generation (Neuro-Symbolic Approaches)</h3>
+
+<p>Manually defining P-E-R schemas for large toolsets is resource-intensive. Automated neuro-symbolic methods address this by inferring dependency relationships from tool metadata and observed behavior.</p>
+
+<h4>GNN-Based Dependency Inference</h4>
+
+<p>Frameworks like GTool construct a task-specific TDG for efficient tool selection. The Tool Graph Retriever (TGR) trains a discriminator to identify dependencies and utilizes graph encoding techniques to derive better tool representations for optimal retrieval and planning. This structural analysis of tool metadata provides a critical mechanism for preemptively managing tool conflicts and redundancy.</p>
+
+<p>The Interactive Graph Discovery Agent (IGDA) uses an LLM pipeline to iteratively propose experimental tool executions and updates the dependency graph \(\hat{G}_R\) based on binary feedback (success or failure) over \(R\) rounds, aiming to minimize the distance to the ground truth graph \(G^*\).</p>
+
+<h4>Causal Structure Learning</h4>
+
+<p>Beyond static metadata, dependencies can be derived dynamically from historical execution data. Structural Causal Action (SCA) models analyze action traces to learn a Causal Action Matrix (\(M\)), which explicitly encodes the causal influence of preceding states and actions on subsequent decisions. This causal knowledge enables the LLM to adjust action probabilities based on learned dynamics, offering a mechanism for continuous self-improvement of the TDG.</p>
+
+<p>If execution monitoring reveals that a tool link has become unreliable, the causal influence weight for that path is automatically degraded, effectively implementing implicit runtime pruning based on observed reliability.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Methodology</th>
+      <th>Principle</th>
+      <th>TDG Output</th>
+      <th>Key Advantages</th>
+      <th>Primary Disadvantage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PDDL/P-E-R Schema</td>
+      <td>Formal Symbolic Logic</td>
+      <td>Explicit, static Precondition-Effect links</td>
+      <td>Guarantees logical validity and debuggability</td>
+      <td>Highly labor-intensive; poor scalability</td>
+    </tr>
+    <tr>
+      <td>LLM-Inferred Semantics (GTool, AutoGraph)</td>
+      <td>Neuro-Symbolic Inference (GNNs)</td>
+      <td>Request-specific graph, semantic embeddings</td>
+      <td>Automates discovery, handles incomplete data</td>
+      <td>Accuracy depends heavily on LLM reasoning and training data</td>
+    </tr>
+    <tr>
+      <td>Causal Structure Learning</td>
+      <td>Dynamic Behavioral Analysis</td>
+      <td>Weighted causal matrix (M) of state-action influence</td>
+      <td>Learns dynamic dependencies from execution history, supports reliability/recovery</td>
+      <td>Requires extensive, reliable execution data; complex training</td>
+    </tr>
+  </tbody>
+</table>
+<p class="table-caption">Table I: Comparison of Tool Dependency Graph Construction Methodologies</p>
+
+<h2>III. Beyond Topological Sort: Advanced Dependency Resolution Algorithms</h2>
+
+<p>The inadequacies of simple linear scheduling derived from topological sort necessitate the use of advanced planning algorithms optimized for efficiency, scale, and feasibility assurance.</p>
+
+<h3>III.A. Maximizing Parallelism (Partial Order Planning - POP)</h3>
+
+<p>Topological sorting imposes a total, sequential execution order \(\Pi: t_1 \to t_2 \to \cdots \to t_n\), which inherently limits efficiency. Partial Order Planning (POP), or Causal Link Planning (POCL), generates a plan \(\Pi\) that is a partially ordered set of steps, maximizing concurrent execution opportunities. The plan's integrity is maintained by explicit causal links.</p>
+
+<div class="definition-box">
+  <p><strong>Causal Link:</strong> A causal link is a triple \(\langle t_i, c, t_j \rangle\), where:</p>
+  <ul>
+    <li>\(t_i, t_j \in \Pi\) are steps in the plan</li>
+    <li>\(c\) is a condition (a state predicate) such that \(c \in \text{Add}(t_i)\) and \(c \in \text{Pre}(t_j)\)</li>
+    <li>The ordering constraint \(t_i \prec t_j\) is enforced</li>
+  </ul>
+</div>
+
+<p>A critical challenge is managing <strong>threats</strong>—an intermediate action \(t_k\) that "clobbers" the link if \(t_i \prec t_k \prec t_j\) and \(c \in \text{Del}(t_k)\). POP algorithms must resolve such threats by imposing additional ordering constraints on \(t_k\) (i.e., forcing \(t_k \prec t_i\) or \(t_j \prec t_k\)).</p>
+
+<p>Modern agent frameworks, such as LangGraph and AutoGen's GraphFlow, utilize graph-based execution control (DiGraphs) that leverage this partial ordering to support structured parallelism, conditional branching, and looping behaviors. The LLM Compiler approach generates a full, static "Plan-to-Execute" upfront, pre-optimizing the sequence for parallelism.</p>
+
+<h3>III.B. Managing Hierarchical Complexity (HTN Planning)</h3>
+
+<p>For large-scale, complex tasks, Hierarchical Task Network (HTN) Planning offers superior management of complexity. HTN defines a method to decompose non-primitive tasks \(T_{NP}\) into smaller sub-tasks until the plan consists entirely of primitive actions \(T_P = T\) (tool calls). This hierarchical structure intrinsically simplifies global planning by enabling the system to focus on high-level skills and objectives, ensuring scalability.</p>
+
+<p>The LLM is deployed to drive this decomposition process, generating a sequence of high-level sub-problems that can be refined iteratively or solved in parallel using a Divide and Conquer strategy.</p>
+
+<h3>III.C. Guaranteeing Feasibility (Constraint Satisfaction Problems - CSP)</h3>
+
+<p>To move agentic planning from "statistically likely to be correct" to "guaranteed valid," tool selection and ordering must be framed as a Constraint Satisfaction Problem (CSP). A CSP is formally defined as a triple \(\langle X, D, C \rangle\), where:</p>
+
+<ul>
+  <li>\(X = \{x_1, x_2, \ldots, x_m\}\) is the set of decision variables (e.g., tool selection, execution time slots)</li>
+  <li>\(D = \{D_1, D_2, \ldots, D_m\}\) represents the domains of these variables (\(D_i \subseteq \mathbb{Z}\) or \(D_i \subseteq T\))</li>
+  <li>\(C = \{C_1, C_2, \ldots, C_k\}\) is the set of system constraints (e.g., resource limits, temporal deadlines, \(t_i \prec t_j\) dependencies)</li>
+</ul>
+
+<p>The objective is to find an assignment of values to \(X\) such that all constraints in \(C\) are satisfied. LLMs play a crucial role by automating the translation of the natural language problem description into a CSP blueprint, defining the required variables, constraints, and objective functions. This constraint-compliant linguistic optimization is essential because LLMs prioritize statistical likelihood over absolute logical consistency, and the integration of formal constraints prevents the generation of invalid or non-executable plans.</p>
+
+<h3>III.D. Reliability through Structured Failure Recovery</h3>
+
+<p>The inherent non-determinism and fragility of LLMs necessitate formalized recovery mechanisms. <strong>Structured Reflection</strong> introduces a trainable mechanism for error correction. When a tool execution fails, the agent diagnoses the error based on formal evidence (e.g., failure to meet a grounded precondition) and proposes a corrected, executable follow-up tool call \(t_i'\). This approach transforms the process of moving "from error to repair" into a controlled, optimizable loop.</p>
+
+<h2>IV. Contextual Reasoning and Dynamic Execution Plan Optimization</h2>
+
+<p>Contextual reasoning allows the agent to integrate real-time constraints and performance metrics into the TDG, transforming the graph into a dynamic execution model by weighting edges and pruning nodes based on task requirements.</p>
+
+<h3>IV.A. Dynamic Graph Pruning and Tool Relevance</h3>
+
+<p>Contextual information enables the planner to adapt the execution topology based on the specific user request, dynamically removing tools that are available but contextually irrelevant. The Adaptive Graph Pruning (AGP) framework achieves this through a dual optimization strategy:</p>
+
+<ul>
+  <li><strong>Hard-Pruning (Node Selection):</strong> Dynamically configuring the optimal quantity of agents or tools required for the specific task, \(T' \subset T\)</li>
+  <li><strong>Soft-Pruning (Edge Weighting):</strong> Dynamically configuring the communication topology (edges) \(E' \subset E\) between the selected agents</li>
+</ul>
+
+<p>This task-adaptive approach significantly reduces the complexity and token consumption. Advanced frameworks use a Tool Dependency Heterogeneous Graph (TDHG), where node embeddings fuse static API schema structure with historical invocation behavior. This context (reliability, cost) guides a heuristic search strategy toward the most efficient and dependable tool sequence.</p>
+
+<h3>IV.B. Cost-Aware Planning and Scheduling Optimization</h3>
+
+<p>In production environments, execution costs are key variables that must be minimized alongside successful task completion.</p>
+
+<h4>Modeling Sequential Costs</h4>
+
+<p>Cost-aware planning is a sequential decision problem where the selection of tool \(t_i\) affects the budget for subsequent actions \(t_{i+1}, \ldots\). Let \(C(t_i)\) be the computational cost (e.g., latency, token consumption) of executing tool \(t_i\). The agent seeks to minimize the total expected cost of the plan \(\Pi = \langle t_1, \ldots, t_k \rangle\):</p>
+
+<p>\[\min \sum_{i=1}^{k} C(t_i)\]</p>
+
+<p>Reinforcement Learning (RL) algorithms are used to fine-tune the LLM policy, training the agent to generate plans that consider the cascading effect of current tool choices.</p>
+
+<h4>Minimizing Latency with Critical Path Method (CPM)</h4>
+
+<p>By assigning estimated execution durations \(D(t_i)\) to each tool node, the TDG can be analyzed using the Critical Path Method (CPM). The critical path \(P_{\text{crit}}\) identifies the longest sequence of dependent activities, determining the minimum total execution time \(T_{CP}\):</p>
+
+<p>\[T_{CP} = \max_{P \in \text{Paths}(G)} \sum_{t_i \in P} D(t_i)\]</p>
+
+<p>CPM identifies critical tasks that must be prioritized. For maximizing inference throughput, techniques resembling shortest-job-first (SJF) scheduling are employed by using Learning-to-Rank models to predict and prioritize requests based on predicted remaining generation lengths.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Criteria</th>
+      <th>Metric/Mechanism</th>
+      <th>Algorithm Applied</th>
+      <th>Impact on TDG</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Computational Cost</td>
+      <td>Token overhead, Latency, API fees</td>
+      <td>Reinforcement Learning (RL), Dynamic Programming (DP)</td>
+      <td>Edge weighting (Cost function minimization), sequential decision policy refinement</td>
+    </tr>
+    <tr>
+      <td>Execution Time</td>
+      <td>Critical Path Duration, Tool I/O Latency</td>
+      <td>Critical Path Method (CPM)</td>
+      <td>Identifies bottleneck nodes/edges, prioritizes parallelization</td>
+    </tr>
+    <tr>
+      <td>Tool Relevance</td>
+      <td>Task-specific necessity, Redundancy</td>
+      <td>Adaptive Graph Pruning (AGP), Hard/Soft Pruning</td>
+      <td>Dynamic topology construction; elimination of irrelevant nodes/edges \(T \to T'\)</td>
+    </tr>
+    <tr>
+      <td>Reliability/Quality</td>
+      <td>Historical success rate, QoC (accuracy, variance)</td>
+      <td>Relative Reputation (RR), Causal Matrix Adjustment</td>
+      <td>Edge weighting (Trust/Risk maximization), tool selection filtering</td>
+    </tr>
+  </tbody>
+</table>
+<p class="table-caption">Table III: Contextual Optimization Criteria and Techniques</p>
+
+<h2>V. Conflict Resolution and Robustness in Multi-Tool Systems</h2>
+
+<p>Conflicts are inevitable in multi-tool systems and must be managed through structured protocols and sophisticated arbitration.</p>
+
+<h3>V.A. Identifying and Classifying Tool Conflicts</h3>
+
+<p>Conflicts typically arise from limited resources, contradictory information, or misalignment between individual agent objectives:</p>
+
+<ul>
+  <li><strong>Resource Conflict:</strong> Occurs when tools attempt to access a shared, rate-limited resource, often necessitating resolution through negotiation or bidding protocols</li>
+  <li><strong>Belief Conflict:</strong> Arises when tool outputs contradict or invalidate the information provided by another (e.g., one agent's knowledge base contradicts another's), requiring proactive merging, updating, or pruning of external memory structures</li>
+  <li><strong>Goal Conflict:</strong> Generated when individual tool optimization criteria clash (e.g., an agent prioritizing cost minimization vs. one prioritizing comprehensive data retrieval)</li>
+</ul>
+
+<h3>V.B. Strategic Resolution Mechanisms</h3>
+
+<p>Conflict management moves beyond simple failure detection to strategic resolution. In multi-agent systems, resolution is often achieved through <strong>negotiation protocols</strong>, such as agents using a bidding system to allocate resources or tasks, thereby dynamically managing resource contention and task assignment.</p>
+
+<p>Alternatively, irreconcilable conflicts are resolved through <strong>rule-based arbitration</strong>. These policies, which can be custom-defined or automatically generated by LLMs, dictate prioritization. For safety-critical systems, LLM-generated rules have demonstrated effectiveness in operating over execution plans to enforce compliance and mitigate high-risk actions.</p>
+
+<h3>V.C. Enhancing Reliability with Auditable Execution and Recovery</h3>
+
+<p>Due to the inherent non-determinism of LLMs, the creation of reliable, auditable execution trails is critical for high-stakes applications. Modeling tool and agent interactions as a causal graph enables precise causal tracing, allowing the system to isolate and trace failures back to the specific originating agent or interaction responsible for the faulty state change, supporting deep root cause analysis in cascaded workflows.</p>
+
+<h2>VI. Conclusion and Future Directions</h2>
+
+<h3>VI.A. Synthesis: The Neuro-Symbolic Planning Stack</h3>
+
+<p>The development of high-performance agentic systems demands an integrated, neuro-symbolic architecture that leverages the strengths of both LLMs and formal planning methods. This synthesis requires:</p>
+
+<ol>
+  <li><strong>Automated Modeling:</strong> Utilizing LLMs to infer dynamic dependencies (semantic or causal) and synthesize formal constraints (such as PDDL or rigorous JSONSchema descriptions) for TDG construction, overcoming the labor-intensive nature of manual formalization</li>
+
+  <li><strong>Flexible Planning:</strong> Employing advanced algorithms like Partial Order Planning (POP) and Hierarchical Task Networks (HTN) to maximize parallel execution and manage task complexity, moving beyond the constraints of sequential topological sorting</li>
+
+  <li><strong>Dynamic Optimization:</strong> Integrating contextual metrics—including cost, execution time (CPM), and historical reliability—to weight the TDG, utilizing scheduling techniques (RL, DP) to generate resource-optimized execution plans that are not just valid, but economically and temporally efficient</li>
+</ol>
+
+<p>The integration of constraint satisfaction principles, achieved through formal language supervision (e.g., Formal-LLM), is the mechanism that ensures plan validity, transforming LLM planning output from probabilistic suggestions to guaranteed executable plans, essential for enterprise reliability.</p>
+
+<h3>VI.B. Open Challenges and Research Trajectories</h3>
+
+<p>While significant advancements have been made in TDG construction and resolution, several key challenges remain for generalizable, robust deployment:</p>
+
+<ol>
+  <li><strong>Standardization of Tool Metadata:</strong> A universal adoption of explicit Precondition-Effect-Result (P-E-R) schemas, coupled with standardized fields for cost metadata and dynamic reliability scores, is required to facilitate large-scale, automated TDG inference and cross-framework optimization</li>
+
+  <li><strong>Real-time Cost Prediction Accuracy:</strong> Further research is needed to improve the accuracy of learning-to-rank models and RL frameworks in predicting dynamic operational costs (e.g., variable token consumption under load or API latency variance) for proactive and highly efficient scheduling</li>
+
+  <li><strong>Generalizing Self-Correction:</strong> Developing structured reflection and error recovery techniques that are highly generalizable across a diverse array of tool failure modes and domain types is necessary to reduce the brittleness often observed in multi-turn tool interaction</li>
+</ol>
+
+<div style="margin: 3rem 0; padding: 2rem; background-color: var(--bg-light); border-radius: 8px;">
+  <p style="margin: 0;"><strong>About the Author:</strong> Gordi (Ghodrat) Aalipour is a Principal Applied Scientist at Gusto, specializing in agentic AI systems, LLM orchestration, and knowledge graph integration. With a background in both mathematics and computer science, he brings a unique perspective to the theoretical foundations and practical implementations of modern AI systems.</p>
+</div>
+
+</article>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>&copy; 2025 Gordi (Ghodrat) Aalipour. Built with <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>.</p>
+  </div>
+</footer>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

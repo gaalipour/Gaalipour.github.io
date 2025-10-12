@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Blog - Gordi (Ghodrat) Aalipour</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Blog posts by Gordi (Ghodrat) Aalipour on AI, NLP, and Machine Learning">
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --accent-color: #3b82f6;
+      --text-dark: #1f2937;
+      --text-light: #6b7280;
+      --bg-light: #f9fafb;
+      --border-color: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      background-color: var(--bg-light);
+      padding-top: 76px;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      color: var(--primary-color) !important;
+      font-size: 1.25rem;
+    }
+
+    .nav-link {
+      color: var(--text-dark) !important;
+      font-weight: 500;
+      padding: 0.5rem 1rem !important;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    /* Page Header */
+    .page-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4rem 0 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      font-size: 1.125rem;
+      opacity: 0.95;
+    }
+
+    /* Blog Card */
+    .blog-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    .blog-card a {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .blog-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .blog-card-body {
+      padding: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .blog-card h3 {
+      color: var(--text-dark);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .blog-card p {
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+
+    .read-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-color);
+      font-weight: 500;
+      transition: gap 0.3s ease;
+    }
+
+    .blog-card:hover .read-more {
+      gap: 0.75rem;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--text-dark);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      margin-top: 5rem;
+    }
+
+    footer p {
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .page-header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Gordi (Ghodrat) Aalipour</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="index.html#publications">Publications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="index.html#resources">Resources</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="blog.html">Blog</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container text-center">
+    <h1><i class="fas fa-blog me-3"></i>Blog Posts</h1>
+    <p>Thoughts and insights on AI, NLP, and Machine Learning</p>
+  </div>
+</div>
+
+<!-- Blog Posts Grid -->
+<div class="container mb-5">
+  <div class="row g-4">
+    <!-- Featured Blog Post -->
+    <div class="col-lg-4 col-md-6">
+      <div class="blog-card">
+        <a href="blog_pages/tool-orchestration-architecture.html">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 200px; display: flex; align-items: center; justify-content: center; color: white;">
+            <i class="fas fa-project-diagram fa-4x" style="opacity: 0.8;"></i>
+          </div>
+          <div class="blog-card-body">
+            <h3>The Architecture of Agency</h3>
+            <p>Advanced planning and dependency resolution in LLM tool orchestration. A deep dive into Tool Dependency Graphs, neuro-symbolic planning, and constraint satisfaction for agentic AI systems.</p>
+            <span class="read-more">
+              Read More <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Positional Embeddings Post -->
+    <div class="col-lg-4 col-md-6">
+      <div class="blog-card">
+        <a href="blog_pages/blog_post1.html">
+          <div style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); height: 200px; display: flex; align-items: center; justify-content: center; color: white;">
+            <i class="fas fa-layer-group fa-4x" style="opacity: 0.8;"></i>
+          </div>
+          <div class="blog-card-body">
+            <h3>Understanding Positional Embeddings in Transformers</h3>
+            <p>A comprehensive guide to how transformers capture sequential information using sinusoidal and learned positional encodings, including mathematical foundations and alternative approaches.</p>
+            <span class="read-more">
+              Read More <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Placeholder for future posts -->
+    <div class="col-lg-4 col-md-6">
+      <div class="blog-card">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 200px; display: flex; align-items: center; justify-content: center; color: white;">
+          <i class="fas fa-plus fa-3x" style="opacity: 0.5;"></i>
+        </div>
+        <div class="blog-card-body">
+          <h3>More Coming Soon</h3>
+          <p>Stay tuned for more blog posts about AI, machine learning, and technology insights.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>&copy; 2025 Gordi (Ghodrat) Aalipour. Built with <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>.</p>
+  </div>
+</footer>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

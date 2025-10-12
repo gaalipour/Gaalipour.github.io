@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Understanding Positional Embeddings in Transformers - Gordi Aalipour</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A comprehensive guide to positional embeddings in transformer architectures">
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- MathJax for equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --accent-color: #3b82f6;
+      --text-dark: #1f2937;
+      --text-light: #6b7280;
+      --bg-light: #f9fafb;
+      --border-color: #e5e7eb;
+      --code-bg: #f3f4f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      line-height: 1.8;
+      background-color: #ffffff;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      color: var(--primary-color) !important;
+      font-size: 1.25rem;
+    }
+
+    .nav-link {
+      color: var(--text-dark) !important;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    /* Article Header */
+    .article-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4rem 0 3rem;
+      margin-top: 56px;
+    }
+
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .article-meta {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* Article Content */
+    .article-content {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+
+    .article-content h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-dark);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .article-content h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text-dark);
+    }
+
+    .article-content h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--secondary-color);
+    }
+
+    .article-content p {
+      margin-bottom: 1.5rem;
+      font-size: 1.05rem;
+    }
+
+    .article-content ul, .article-content ol {
+      margin-bottom: 1.5rem;
+      padding-left: 2rem;
+    }
+
+    .article-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Math equations */
+    .MathJax {
+      font-size: 1.1em !important;
+    }
+
+    /* Highlight boxes */
+    .definition-box {
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary-color);
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border-radius: 4px;
+    }
+
+    .definition-box strong {
+      color: var(--primary-color);
+    }
+
+    /* Code blocks */
+    code {
+      font-family: 'Fira Code', monospace;
+      background-color: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--text-dark);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      margin-top: 5rem;
+    }
+
+    footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .article-title {
+        font-size: 1.75rem;
+      }
+
+      .article-content {
+        padding: 0 1rem;
+      }
+
+      .article-content h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="../index.html">Gordi (Ghodrat) Aalipour</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#publications">Publications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#resources">Resources</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../blog.html">Blog</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Article Header -->
+<div class="article-header">
+  <div class="container">
+    <h1 class="article-title">Understanding Positional Embeddings in Transformers</h1>
+    <div class="article-meta">
+      <i class="fas fa-calendar me-2"></i>November 26, 2023
+      <span class="mx-3">|</span>
+      <i class="fas fa-user me-2"></i>Gordi Aalipour
+      <span class="mx-3">|</span>
+      <i class="fas fa-clock me-2"></i>8 min read
+    </div>
+  </div>
+</div>
+
+<!-- Article Content -->
+<article class="article-content">
+
+<h2>Introduction</h2>
+
+<p>Positional embeddings are crucial in transformer architectures for capturing sequential information in input data. In transformers, positional embeddings are added to the input embeddings to provide the model with information about the positions of tokens in a sequence.</p>
+
+<p>Transformers do not inherently understand the order or position of tokens in a sequence as they process tokens independently through the self-attention mechanism. To overcome this limitation, positional embeddings assign a unique positional encoding to each token based on its position in the input sequence.</p>
+
+<h2>The Need for Positional Information</h2>
+
+<p>Unlike recurrent neural networks (RNNs) or convolutional neural networks (CNNs), which have built-in mechanisms to capture sequential information, the transformer architecture processes all tokens in parallel. While this parallelization leads to significant computational efficiency gains, it comes at a cost: the model has no inherent notion of token order.</p>
+
+<p>Consider the two sentences:</p>
+<ul>
+  <li>"The cat chased the mouse."</li>
+  <li>"The mouse chased the cat."</li>
+</ul>
+
+<p>Without positional information, a transformer would treat these sentences identically, as it would only see an unordered set of tokens. Positional embeddings solve this problem by encoding the position of each token directly into its representation.</p>
+
+<h2>Mathematical Formulation</h2>
+
+<p>The original transformer paper ("Attention is All You Need" by Vaswani et al., 2017) introduced sinusoidal positional encodings. These embeddings are typically created using sine and cosine functions with different frequencies to represent different positions in the sequence.</p>
+
+<h3>Sinusoidal Positional Encoding</h3>
+
+<p>The formula for positional encoding in transformers can be represented as:</p>
+
+<div class="definition-box">
+  <p><strong>For even dimensions (2i):</strong></p>
+  <p>\[PE(pos, 2i) = \sin\left(\frac{pos}{10000^{\frac{2i}{d_{model}}}}\right)\]</p>
+
+  <p><strong>For odd dimensions (2i+1):</strong></p>
+  <p>\[PE(pos, 2i+1) = \cos\left(\frac{pos}{10000^{\frac{2i}{d_{model}}}}\right)\]</p>
+</div>
+
+<p>Where:</p>
+<ul>
+  <li>\(pos\) is the position of the token in the sequence</li>
+  <li>\(i\) is the dimension index (ranging from 0 to \(d_{model}/2 - 1\))</li>
+  <li>\(d_{model}\) is the dimensionality of the embedding space (e.g., 512 in the original paper)</li>
+</ul>
+
+<h3>Why Sinusoidal Functions?</h3>
+
+<p>The choice of sinusoidal functions is not arbitrary. This design has several important properties:</p>
+
+<ol>
+  <li><strong>Unique Encodings:</strong> Each position receives a unique encoding vector across all dimensions.</li>
+
+  <li><strong>Linear Relationships:</strong> The encoding allows the model to learn relative positions easily. For any fixed offset \(k\), \(PE(pos + k)\) can be represented as a linear function of \(PE(pos)\), because:
+    <p>\[\sin(\alpha + \beta) = \sin(\alpha)\cos(\beta) + \cos(\alpha)\sin(\beta)\]</p>
+    <p>\[\cos(\alpha + \beta) = \cos(\alpha)\cos(\beta) - \sin(\alpha)\sin(\beta)\]</p>
+  </li>
+
+  <li><strong>Bounded Values:</strong> Sine and cosine functions always produce values in the range \([-1, 1]\), which helps with numerical stability during training.</li>
+
+  <li><strong>Extrapolation to Longer Sequences:</strong> The model can potentially generalize to sequence lengths longer than those seen during training, as the positional encoding function is defined for any position value.</li>
+</ol>
+
+<h2>Alternative Approaches</h2>
+
+<p>While sinusoidal encodings are elegant and effective, researchers have explored several alternatives:</p>
+
+<h3>Learned Positional Embeddings</h3>
+
+<p>Instead of using fixed sinusoidal functions, some models (like BERT) use learned positional embeddings. These are trainable parameters initialized randomly and optimized during training. The main trade-offs are:</p>
+
+<ul>
+  <li><strong>Pros:</strong> Can potentially learn more task-specific positional information</li>
+  <li><strong>Cons:</strong> Limited to the maximum sequence length seen during training; cannot extrapolate to longer sequences</li>
+</ul>
+
+<h3>Relative Positional Encodings</h3>
+
+<p>Models like Transformer-XL and T5 use relative positional encodings, which encode the relative distance between tokens rather than their absolute positions. This approach has shown improved performance on tasks requiring understanding of relative positions.</p>
+
+<h3>Rotary Position Embedding (RoPE)</h3>
+
+<p>Rotary Position Embedding (RoPE), introduced by Su et al. (2021) and adopted by modern LLMs like GPT-Neo, LLaMA, PaLM, and GPT-NeoX, represents a significant advancement in positional encoding. RoPE encodes position information by rotating the embedding space using a rotation matrix.</p>
+
+<h4>Mathematical Foundation of RoPE</h4>
+
+<p>RoPE applies a rotation matrix to encode absolute position while maintaining relative position information. For a query vector \(\mathbf{q}\) and key vector \(\mathbf{k}\) at positions \(m\) and \(n\) respectively, RoPE applies:</p>
+
+<div class="definition-box">
+  <p>\[\mathbf{q}_m = \mathbf{R}_{\Theta, m} \mathbf{q}\]</p>
+  <p>\[\mathbf{k}_n = \mathbf{R}_{\Theta, n} \mathbf{k}\]</p>
+  <p>Where \(\mathbf{R}_{\Theta, m}\) is a rotation matrix parameterized by position \(m\) and frequency set \(\Theta = \{\theta_i = 10000^{-2i/d}, i \in [0, 1, \ldots, d/2-1]\}\)</p>
+</div>
+
+<p>The key insight is that the inner product \(\mathbf{q}_m^T \mathbf{k}_n\) only depends on the relative position \((m-n)\), enabling the model to learn relative positional relationships naturally:</p>
+
+<p>\[\mathbf{q}_m^T \mathbf{k}_n = \mathbf{q}^T \mathbf{R}_{\Theta, n-m} \mathbf{k}\]</p>
+
+<h4>Advantages of RoPE</h4>
+
+<ul>
+  <li><strong>Relative Position Awareness:</strong> Naturally encodes relative positions through rotation operations</li>
+  <li><strong>Computational Efficiency:</strong> Rotation can be implemented efficiently without additional parameters</li>
+  <li><strong>Long-range Decay:</strong> Attention scores naturally decay with distance, improving model focus</li>
+  <li><strong>Flexible Sequence Length:</strong> Can extrapolate to longer sequences than seen during training</li>
+</ul>
+
+<h3>Context Length Extension Methods</h3>
+
+<p>A critical challenge with positional embeddings is extending models to handle longer contexts than they were trained on. Recent research has introduced several interpolation and extrapolation techniques to address this.</p>
+
+<h4>Position Interpolation (PI)</h4>
+
+<p>Position Interpolation, introduced by Chen et al. (2023), extends context length by linearly downscaling position indices. Instead of extrapolating to positions beyond the training range \([0, L]\), PI interpolates within the trained range:</p>
+
+<div class="definition-box">
+  <p>\[f'(x, m) = f\left(x, m \cdot \frac{L}{L'}\right)\]</p>
+  <p>Where \(L\) is the original context length, \(L'\) is the extended length, and \(m\) is the position index.</p>
+</div>
+
+<p>This approach leverages the model's strong interpolation capabilities while avoiding the distribution shift that occurs during extrapolation. Fine-tuning with PI requires significantly less compute (as little as 1000 steps) compared to training from scratch.</p>
+
+<h4>YaRN: Yet another RoPE extensioN method</h4>
+
+<p>YaRN (Peng et al., 2023) represents a state-of-the-art approach for extending context windows in RoPE-based models. It introduces several key innovations:</p>
+
+<p><strong>1. NTK-Aware Interpolation:</strong></p>
+<p>YaRN applies Neural Tangent Kernel (NTK)-aware scaling that adjusts the frequency base differently across dimensions:</p>
+
+<div class="definition-box">
+  <p>\[\theta'_i = \theta_i \cdot \alpha^{2i/d}\]</p>
+  <p>Where \(\alpha\) is a scaling factor computed as \(\alpha = (L'/L)^{1/(d-2)}\)</p>
+</div>
+
+<p>This preserves high-frequency components (important for local attention) while scaling low-frequency components (critical for long-range dependencies).</p>
+
+<p><strong>2. Attention Temperature Scaling:</strong></p>
+<p>YaRN introduces a temperature parameter \(\sqrt{t}\) to the attention logits to compensate for entropy loss during interpolation:</p>
+
+<p>\[\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k \cdot t}}\right)V\]</p>
+
+<p><strong>3. Dynamic Scaling:</strong></p>
+<p>YaRN applies different scaling factors to different frequency bands, using a ramp function to smoothly transition between interpolation (low frequencies) and extrapolation (high frequencies).</p>
+
+<h4>Performance and Results</h4>
+
+<p>Empirical results demonstrate the effectiveness of these methods:</p>
+
+<ul>
+  <li><strong>LLaMA 2 with YaRN:</strong> Successfully extended from 4K to 128K context length with minimal perplexity degradation</li>
+  <li><strong>Position Interpolation:</strong> Extended LLaMA models from 2K to 32K tokens while maintaining performance on standard benchmarks</li>
+  <li><strong>Computational Efficiency:</strong> These methods require 100-1000x less training compute compared to full retraining</li>
+</ul>
+
+<h3>Other Modern Extensions</h3>
+
+<h4>ALiBi (Attention with Linear Biases)</h4>
+
+<p>ALiBi (Press et al., 2022) eliminates positional embeddings entirely by adding a bias directly to attention scores:</p>
+
+<p>\[\text{score}(q_i, k_j) = q_i^T k_j - \lambda |i - j|\]</p>
+
+<p>Where \(\lambda\) is a head-specific slope. This simple approach enables strong extrapolation capabilities without position embeddings.</p>
+
+<h4>xPos (Exponential Position Embedding)</h4>
+
+<p>xPos enhances length extrapolation by applying exponential decay to position information, helping models better generalize to sequences longer than training data.</p>
+
+<h2>Implementation Details</h2>
+
+<p>In practice, positional embeddings are added element-wise to the input embeddings before they are fed into the transformer layers:</p>
+
+<div class="definition-box">
+  <p>\[\text{Input to Transformer} = \text{Token Embedding} + \text{Positional Embedding}\]</p>
+</div>
+
+<p>This simple addition allows the model to use both the semantic information from the token embeddings and the positional information from the positional embeddings simultaneously. The self-attention mechanism can then learn to attend to tokens based on both their content and their position in the sequence.</p>
+
+<h2>Impact on Model Performance</h2>
+
+<p>Positional embeddings are critical for transformer performance across various NLP tasks:</p>
+
+<ul>
+  <li><strong>Machine Translation:</strong> Understanding word order is essential for correct translation between languages with different syntactic structures.</li>
+  <li><strong>Question Answering:</strong> The position of words can significantly affect meaning (e.g., "Who defeated whom?" vs. "Whom did who defeat?").</li>
+  <li><strong>Text Generation:</strong> Maintaining coherent and grammatically correct sequences requires understanding of token positions.</li>
+</ul>
+
+<p>Studies have shown that removing positional embeddings dramatically degrades transformer performance, confirming their importance in capturing sequential information.</p>
+
+<h2>Conclusion</h2>
+
+<p>Positional embeddings have evolved significantly since the original transformer paper. From the elegant simplicity of sinusoidal encodings to the sophisticated rotation-based mechanisms of RoPE, and now to advanced context extension methods like YaRN and Position Interpolation, the field continues to innovate.</p>
+
+<p>Key takeaways from this evolution:</p>
+
+<ul>
+  <li><strong>RoPE has become the de facto standard</strong> for modern LLMs due to its elegant combination of absolute and relative position encoding</li>
+  <li><strong>Context length extension is now practical</strong> through interpolation methods, requiring minimal additional training</li>
+  <li><strong>Trade-offs remain</strong> between different approaches—sinusoidal for simplicity, learned for task-specificity, RoPE for relative awareness, and YaRN for extreme length extension</li>
+  <li><strong>Future directions</strong> include developing positional encodings that better handle multi-modal data, hierarchical structures, and even longer contexts (millions of tokens)</li>
+</ul>
+
+<p>Understanding these positional encoding mechanisms is crucial for anyone working with modern language models, whether fine-tuning existing models, extending context lengths, or designing new architectures. As models continue to scale and tackle longer contexts, innovations in positional encoding will remain a critical research frontier.</p>
+
+<div style="margin: 3rem 0; padding: 2rem; background-color: var(--bg-light); border-radius: 8px;">
+  <p style="margin: 0;"><strong>About the Author:</strong> Gordi (Ghodrat) Aalipour is a Principal Applied Scientist at Gusto, specializing in agentic AI systems, LLM orchestration, and knowledge graph integration. With expertise in both theoretical foundations and practical implementations of NLP systems, he regularly explores the inner workings of modern language models.</p>
+</div>
+
+</article>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>&copy; 2025 Gordi (Ghodrat) Aalipour. Built with <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>.</p>
+  </div>
+</footer>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
