@@ -258,6 +258,34 @@
       color: white !important;
     }
 
+    /* Publications List */
+    .publications-list {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-color);
+    }
+
+    .publication-item {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .publication-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .publication-item:first-child {
+      padding-top: 0;
+    }
+
+    .pub-header {
+      display: flex;
+      align-items: flex-start;
+    }
+
     /* Links Section */
     .links-section ul {
       list-style: none;
@@ -374,8 +402,8 @@
 <section class="hero-section">
   <div class="container">
     <img src="ghodrat.jpg" class="profile-img" alt="Gordi (Ghodrat) Aalipour">
-    <h1>Welcome, I'm Gordi (Ghodrat) Aalipour</h1>
-    <p>Applied Scientist | AI & NLP Research Engineer | Mathematician</p>
+    <h1>Welcome to my homepage!<br><span style="font-size: 0.8em;">I'm Gordi (Ghodrat) Aalipour</span></h1>
+    <p>Applied AI Scientist | AI & NLP Research Engineer | Mathematician</p>
     <div class="social-links">
       <a href="https://www.linkedin.com/in/gaalipour/" target="_blank" aria-label="LinkedIn">
         <i class="fab fa-linkedin"></i>
@@ -483,40 +511,47 @@
       I have been publishing my research in the format of peer-reviewed journals, articles, and patents.
     </p>
 
-    <div class="row g-4">
-      <div class="col-lg-4 col-md-6">
-        <div class="info-card text-center">
-          <i class="fas fa-graduation-cap fa-3x mb-3" style="color: var(--heading-color);"></i>
-          <h4>Journal Publications</h4>
-          <p class="mb-4">Peer-reviewed research in AI, NLP, and graph theory.</p>
-          <a href="https://scholar.google.com/citations?user=tX3zxJcAAAAJ&hl=en" class="publication-link" target="_blank">
-            <i class="fas fa-graduation-cap"></i>
-            View Google Scholar
-          </a>
-        </div>
-      </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="publications-list">
+          <div class="publication-item">
+            <div class="pub-header">
+              <i class="fas fa-graduation-cap me-3" style="color: var(--heading-color); font-size: 1.5rem;"></i>
+              <div>
+                <h4 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Journal Publications</h4>
+                <p style="color: var(--text-light); margin-bottom: 0.75rem;">Peer-reviewed research in AI, NLP, and graph theory.</p>
+                <a href="https://scholar.google.com/citations?user=tX3zxJcAAAAJ&hl=en" target="_blank" style="font-weight: 500;">
+                  View Google Scholar <i class="fas fa-external-link-alt ms-1" style="font-size: 0.85rem;"></i>
+                </a>
+              </div>
+            </div>
+          </div>
 
-      <div class="col-lg-4 col-md-6">
-        <div class="info-card text-center">
-          <i class="fas fa-lightbulb fa-3x mb-3" style="color: var(--heading-color);"></i>
-          <h4>Patents</h4>
-          <p class="mb-4">Innovations in conversational AI and knowledge systems.</p>
-          <a href="https://patents.justia.com/inventor/ghodratollah-aalipour-hafshejani" class="publication-link" target="_blank">
-            <i class="fas fa-file-alt"></i>
-            Browse Patents
-          </a>
-        </div>
-      </div>
+          <div class="publication-item">
+            <div class="pub-header">
+              <i class="fas fa-lightbulb me-3" style="color: var(--heading-color); font-size: 1.5rem;"></i>
+              <div>
+                <h4 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Patents</h4>
+                <p style="color: var(--text-light); margin-bottom: 0.75rem;">Innovations in conversational AI and knowledge systems.</p>
+                <a href="https://patents.justia.com/inventor/ghodratollah-aalipour-hafshejani" target="_blank" style="font-weight: 500;">
+                  Browse Patents <i class="fas fa-external-link-alt ms-1" style="font-size: 0.85rem;"></i>
+                </a>
+              </div>
+            </div>
+          </div>
 
-      <div class="col-lg-4 col-md-6">
-        <div class="info-card text-center">
-          <i class="fas fa-newspaper fa-3x mb-3" style="color: var(--heading-color);"></i>
-          <h4>Articles & Blogs</h4>
-          <p class="mb-4">Industry research on conversational search and AI applications.</p>
-          <a href="https://medium.com/walmartglobaltech/understanding-conversational-search-refinement-queries-in-walmart-shopping-assistant-fc04e4f97532" class="publication-link" target="_blank">
-            <i class="fab fa-medium"></i>
-            Read on Medium
-          </a>
+          <div class="publication-item">
+            <div class="pub-header">
+              <i class="fas fa-newspaper me-3" style="color: var(--heading-color); font-size: 1.5rem;"></i>
+              <div>
+                <h4 style="margin-bottom: 0.25rem; font-size: 1.25rem;">Articles & Blogs</h4>
+                <p style="color: var(--text-light); margin-bottom: 0.75rem;">Industry research on conversational search and AI applications.</p>
+                <a href="https://medium.com/walmartglobaltech/understanding-conversational-search-refinement-queries-in-walmart-shopping-assistant-fc04e4f97532" target="_blank" style="font-weight: 500;">
+                  Read on Medium <i class="fas fa-external-link-alt ms-1" style="font-size: 0.85rem;"></i>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
