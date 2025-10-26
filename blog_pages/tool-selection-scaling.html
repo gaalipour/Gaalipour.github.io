@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Scaling Tool Selection in Large-Scale Agentic Systems - Gordi Aalipour</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Architectures for scaling tool selection in large-scale agentic systems with LLMs">
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --accent-color: #3b82f6;
+      --text-dark: #1f2937;
+      --text-light: #6b7280;
+      --bg-light: #f9fafb;
+      --border-color: #e5e7eb;
+      --code-bg: #f8fafc;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      background-color: var(--bg-light);
+      line-height: 1.7;
+    }
+
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      color: var(--primary-color) !important;
+      font-size: 1.25rem;
+    }
+
+    .nav-link {
+      color: var(--text-dark) !important;
+      font-weight: 500;
+      padding: 0.5rem 1rem !important;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    .blog-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4rem 0 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .blog-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .blog-meta {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-top: 1rem;
+    }
+
+    .blog-content {
+      background: white;
+      border-radius: 12px;
+      padding: 3rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 3rem;
+    }
+
+    .blog-content h2 {
+      color: var(--text-dark);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .blog-content h2:first-child {
+      margin-top: 0;
+    }
+
+    .blog-content h3 {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .blog-content p {
+      margin-bottom: 1.25rem;
+      font-size: 1.05rem;
+    }
+
+    .blog-content strong {
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .blog-content ul, .blog-content ol {
+      margin-bottom: 1.5rem;
+      padding-left: 2rem;
+    }
+
+    .blog-content li {
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+    }
+
+    .citation {
+      color: var(--primary-color);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .citation:hover {
+      text-decoration: underline;
+    }
+
+    .references {
+      background: var(--bg-light);
+      border-left: 4px solid var(--primary-color);
+      padding: 1.5rem;
+      margin-top: 3rem;
+      border-radius: 4px;
+    }
+
+    .references h3 {
+      margin-top: 0 !important;
+      font-size: 1.3rem !important;
+    }
+
+    .references ol {
+      margin-bottom: 0;
+    }
+
+    .references li {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      background-color: var(--text-dark);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      margin-top: 4rem;
+    }
+
+    footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .blog-header h1 {
+        font-size: 1.75rem;
+      }
+
+      .blog-content {
+        padding: 1.5rem;
+      }
+
+      .blog-content h2 {
+        font-size: 1.5rem;
+      }
+
+      .blog-content h3 {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="../index.html">Gordi (Ghodrat) Aalipour</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#publications">Publications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../index.html#resources">Resources</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../blog.html">Blog</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Blog Header -->
+<div class="blog-header" style="margin-top: 56px;">
+  <div class="container">
+    <h1>Architectures for Scaling Tool Selection in Large-Scale Agentic Systems</h1>
+    <div class="blog-meta">
+      <i class="fas fa-calendar-alt me-2"></i>October 25, 2025
+      <span class="mx-3">|</span>
+      <i class="fas fa-tag me-2"></i>Agentic AI, Tool Orchestration, LLM Systems
+    </div>
+  </div>
+</div>
+
+<!-- Blog Content -->
+<div class="container mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="blog-content">
+
+        <h2>Introduction: The Architectural Challenge of Tool Scale</h2>
+        <p>
+          The advancement of Large Language Model (LLM) agents has positioned them as central components for complex problem-solving, leveraging external APIs and tools for interaction with real-world environments <a href="#ref1" class="citation">[1]</a>. However, scaling these systems to accommodate expansive tool libraries, such as those exceeding 16,000 APIs in benchmarks like ToolBench and Gorilla <a href="#ref3" class="citation">[3]</a>, exposes a fundamental architectural limitation: the finite context window of the LLM <a href="#ref5" class="citation">[5]</a>.
+        </p>
+        <p>
+          Injecting the full schemas and descriptions for thousands of tools is computationally prohibitive and leads to context saturation, impairing memory consistency and procedural integrity over multi-step tasks <a href="#ref5" class="citation">[5]</a>. Therefore, state-of-the-art research is driven by the necessity to decouple the high inference cost of the primary LLM from the low-complexity task of initial tool selection and filtering <a href="#ref7" class="citation">[7]</a>, leading to diverse architectural solutions.
+        </p>
+
+        <h2>1. Naive Retrieval-Augmented Generation (RAG)</h2>
+        <p>
+          The foundational approach to large-scale tool management is Naive Retrieval-Augmented Generation (RAG) <a href="#ref8" class="citation">[8]</a>. This method involves encoding tool descriptions (schemas, function names, and input/output parameters) into high-dimensional vectors and storing them in a Vector Database (VDB) <a href="#ref9" class="citation">[9]</a>. A user query is embedded, and a similarity search retrieves the top-k most relevant tools for presentation to the LLM <a href="#ref6" class="citation">[6]</a>. This process is crucial for addressing the context constraint by efficiently selecting a small tool subset <a href="#ref6" class="citation">[6]</a>.
+        </p>
+        <p>
+          However, this method is recognized as insufficient for robust agentic systems due to its inherent fragility <a href="#ref7" class="citation">[7]</a>. Selection based purely on dense semantic similarity often fails in multi-step tasks because it overlooks the critical inter-tool dependencies and prerequisites required for complex, goal-driven workflows <a href="#ref10" class="citation">[10]</a>. Additionally, semantic search often struggles with specialized jargon, technical terms, or IDs, necessitating more advanced approaches like Hybrid RAG (combining dense and sparse lexical search) to ensure adequate recall <a href="#ref11" class="citation">[11]</a>.
+        </p>
+
+        <h2>2. Graph-Based Architectures</h2>
+        <p>
+          Graph-based frameworks address the critical failure mode of Naive RAG by explicitly modeling the relationships between tools, transforming tool selection into a structured relational query problem <a href="#ref13" class="citation">[13]</a>.
+        </p>
+        <p>
+          In these architectures, tool functionalities, parameters, and outputs are modeled as entities (nodes), while operational rules, data flow, and prerequisite requirements are explicitly defined as relationships (edges) within a Knowledge Graph (KG) <a href="#ref13" class="citation">[13]</a>. This graph structure allows agents to use declarative queries (such as Cypher) to traverse dependency paths <a href="#ref14" class="citation">[14]</a>, ensuring the selection is based on procedural usability within the current workflow state, rather than just semantic relevance <a href="#ref10" class="citation">[10]</a>.
+        </p>
+        <p>
+          The KG-Agent framework specifically demonstrates that this integration of external, structured knowledge can effectively compensate for the limited parametric memory of Smaller Language Models (SLMs) <a href="#ref15" class="citation">[15]</a>. By relying on the KG for structured relational lookups, these SLM-KG systems can maintain procedural integrity and achieve strong performance in multi-hop reasoning tasks <a href="#ref16" class="citation">[16]</a>. Furthermore, the explicit nature of the graph provides enhanced transparency and explainability into the agent's decision-making process <a href="#ref14" class="citation">[14]</a>.
+        </p>
+        <p>
+          The primary academic and engineering trade-off for this method is the significant upfront effort required to build and maintain the graph structure <a href="#ref18" class="citation">[18]</a>. Since accuracy is tied to an explicit representation of all tool dependencies, the resulting structure can be rigid and brittle when faced with dynamically changing tool specifications.
+        </p>
+
+        <h2>3. Hierarchical and Planning-Based Frameworks</h2>
+        <p>
+          This category moves beyond reactive tool selection <a href="#ref19" class="citation">[19]</a> by introducing deliberation and foresight to optimize tool sequencing over long, multi-step horizons <a href="#ref10" class="citation">[10]</a>.
+        </p>
+
+        <h3>Hierarchical Systems</h3>
+        <p>
+          Hierarchical architectures structurally decouple the high-level reasoning from the low-level execution to manage complexity and reduce repetitive LLM calls. The Agent-as-tool framework separates the agent into a high-level Planner (verbal reasoning/task decomposition) and a specialized Toolcaller (structured function call generation) <a href="#ref22" class="citation">[22]</a>. This separation enhances the clarity of the reasoning process and improves performance in complex multi-hop question-answering tasks <a href="#ref22" class="citation">[22]</a>. Similarly, Plan-and-Execute architectures generate a comprehensive, multi-step plan upfront, allowing executors to invoke tools sequentially, thus avoiding the high cost of a new LLM call for every single intermediate thought <a href="#ref19" class="citation">[19]</a>.
+        </p>
+
+        <h3>Deliberative Search</h3>
+        <p>
+          More advanced planning integrates explicit search algorithms. The ToolTree framework <a href="#ref21" class="citation">[21]</a> utilizes a plug-and-play Monte Carlo Tree Search (MCTS) module to systematically explore the vast space of possible tool usage trajectories <a href="#ref21" class="citation">[21]</a>. This deliberate selection is guided by a novel dual-stage LLM evaluation mechanism that estimates a tool's utility before invocation (pre-execution model) and assesses its actual contribution after execution (post-execution model) <a href="#ref21" class="citation">[21]</a>. This feedback loop enables the agent to make adaptive, informed decisions, minimizing reliance on greedy strategies <a href="#ref21" class="citation">[21]</a>. Refinements like I-MCTS (Introspective MCTS) further enhance search quality by analyzing results from parent and sibling nodes <a href="#ref24" class="citation">[24]</a>, while DITS (Data Influence-oriented Tree Search) optimizes resource allocation within the tree search <a href="#ref25" class="citation">[25]</a>.
+        </p>
+        <p>
+          While offering superior flexibility and reasoning quality, the computational demands of multi-agent management and the iterative nature of search (MCTS) introduce significant latency and computational overhead, making these approaches less suitable for high-throughput or real-time applications <a href="#ref26" class="citation">[26]</a>.
+        </p>
+
+        <h2>4. Fine-Tuning Approaches</h2>
+        <p>
+          A final approach shifts the emphasis from runtime retrieval/planning to specialized, pre-trained knowledge acquisition, involving fine-tuning the base model on massive, high-quality datasets of tool-use examples.
+        </p>
+        <p>
+          Frameworks like ToolLLM <a href="#ref4" class="citation">[4]</a> leverage automatically annotated datasets derived from thousands of real-world APIs to instill a parametric understanding of tool selection and function calling syntax <a href="#ref4" class="citation">[4]</a>. This investment in massive data generation and specialized model training can yield performance comparable to large proprietary models <a href="#ref28" class="citation">[28]</a>. This approach can also be used to enhance Smaller Language Models (SLMs) for specific reasoning tasks using techniques like Direct Preference Optimization (DPO) <a href="#ref28" class="citation">[28]</a>.
+        </p>
+        <p>
+          A critical component of this paradigm is ensuring the reliability of the structured output—the function call itself. The ToolPRM (Process Reward Modeling) framework addresses this by moving beyond coarse-grained outcome rewards to fine-grained intra-call process supervision <a href="#ref29" class="citation">[29]</a>. ToolPRM formalizes function call generation as a dynamic decision process involving distinct state transitions (e.g., Selecting Function Name, Selecting Parameter Name, Filling Parameter Value) <a href="#ref30" class="citation">[30]</a>. A specialized reward model is trained to verify the correctness of these intermediate steps, ensuring the structural integrity of the output <a href="#ref30" class="citation">[30]</a>. By integrating ToolPRM with beam search, researchers established the inference scaling principle for structured outputs: "explore more but retain less," maximizing reliability by aggressively pruning low-quality candidates during generation <a href="#ref29" class="citation">[29]</a>.
+        </p>
+        <p>
+          The primary drawbacks remain the massive investment required for data generation and model training <a href="#ref28" class="citation">[28]</a>, alongside the challenge of effective generalization to entirely new tools not encountered during the training phase.
+        </p>
+
+        <h2>Conclusion: Optimized Trade-Offs</h2>
+        <p>
+          The academic and industry landscape offers several distinct architectures:
+        </p>
+        <ul>
+          <li><strong>Naive Retrieval-Augmented Generation (RAG):</strong> The foundational approach uses semantic search to find relevant tools from a vector database. While scalable, it often fails to handle tool dependencies and can be confused by tools with similar descriptions.</li>
+
+          <li><strong>Graph-Based Architectures:</strong> Frameworks like ToolNet and Graph RAG-Tool Fusion represent tools as nodes in a graph to explicitly model dependencies. This improves accuracy for multi-step tasks but requires significant upfront effort to build and maintain the graph structure, making it potentially brittle.</li>
+
+          <li><strong>Hierarchical and Planning-Based Frameworks:</strong> Methods like Agent-as-Tool and ToolTree use multiple agents or tree-search algorithms to create more deliberate, forward-looking plans. These approaches offer high flexibility and reasoning quality but often introduce significant latency and computational overhead, making them less suitable for real-time applications.</li>
+
+          <li><strong>Fine-Tuning Approaches:</strong> The ToolLLM framework demonstrates that fine-tuning a model on a massive, high-quality dataset of tool-use examples can yield performance comparable to proprietary models. This offers the best performance but requires a massive investment in data generation and model training, and can still struggle to generalize to entirely new tools.</li>
+        </ul>
+        <p>
+          Our analysis indicates that an <strong>Enhanced RAG approach</strong> offers the best trade-off for many practical needs. It is more sophisticated than naive RAG, more flexible and less rigid than graph-based methods, and more practical and cost-effective than full fine-tuning or complex planning frameworks.
+        </p>
+
+        <!-- References Section -->
+        <div class="references">
+          <h3>References</h3>
+          <ol>
+            <li id="ref1">Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). <a href="https://arxiv.org/abs/2210.03629" target="_blank">ReAct: Synergizing Reasoning and Acting in Language Models</a>. ICLR 2023.</li>
+
+            <li id="ref3">Patil, S. G., Zhang, T., Wang, X., & Gonzalez, J. E. (2023). <a href="https://arxiv.org/abs/2305.15334" target="_blank">Gorilla: Large Language Model Connected with Massive APIs</a>. arXiv:2305.15334.</li>
+
+            <li id="ref4">Qin, Y., et al. (2023). <a href="https://arxiv.org/abs/2307.16789" target="_blank">ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs</a>. ICLR 2024 Spotlight. arXiv:2307.16789.</li>
+
+            <li id="ref5">IBM Research. <a href="https://research.ibm.com/blog/larger-context-window" target="_blank">Why larger LLM context windows are all the rage</a>. IBM Research Blog.</li>
+
+            <li id="ref6">Lewis, P., et al. (2020). <a href="https://arxiv.org/abs/2005.11401" target="_blank">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a>. NeurIPS 2020. arXiv:2005.11401.</li>
+
+            <li id="ref7">Schick, T., et al. (2023). <a href="https://arxiv.org/abs/2302.04761" target="_blank">Toolformer: Language Models Can Teach Themselves to Use Tools</a>. arXiv:2302.04761.</li>
+
+            <li id="ref8">Gao, Y., et al. (2023). <a href="https://arxiv.org/abs/2312.10997" target="_blank">Retrieval-Augmented Generation for Large Language Models: A Survey</a>. arXiv:2312.10997.</li>
+
+            <li id="ref9">Johnson, J., Douze, M., & Jégou, H. (2021). <a href="https://github.com/facebookresearch/faiss" target="_blank">Billion-scale similarity search with GPUs</a>. IEEE Transactions on Big Data.</li>
+
+            <li id="ref10">Press, O., et al. (2022). <a href="https://arxiv.org/abs/2205.10625" target="_blank">Measuring and Narrowing the Compositionality Gap in Language Models</a>. EMNLP 2023. arXiv:2205.10625.</li>
+
+            <li id="ref11"><a href="https://superlinked.com/vectorhub/articles/optimizing-rag-with-hybrid-search-reranking" target="_blank">Optimizing RAG with Hybrid Search & Reranking</a>. VectorHub by Superlinked.</li>
+
+            <li id="ref13">Edge, D., et al. (2024). <a href="https://arxiv.org/abs/2501.00309" target="_blank">Retrieval-Augmented Generation with Graphs (GraphRAG)</a>. Microsoft Research. arXiv:2501.00309.</li>
+
+            <li id="ref14"><a href="https://neo4j.com/docs/cypher-manual/current/" target="_blank">Neo4j Cypher Query Language</a>. Neo4j Graph Database Documentation.</li>
+
+            <li id="ref15">Luo, L., et al. (2024). <a href="https://arxiv.org/abs/2402.11163" target="_blank">KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph</a>. arXiv:2402.11163.</li>
+
+            <li id="ref16">Sun, J., et al. (2024). Think-on-Graph: Deep and Responsible Reasoning of Large Language Model on Knowledge Graph. ICLR 2024.</li>
+
+            <li id="ref18">Hogan, A., et al. (2021). <a href="https://arxiv.org/abs/2003.02320" target="_blank">Knowledge Graphs</a>. ACM Computing Surveys. arXiv:2003.02320.</li>
+
+            <li id="ref19">LangChain. <a href="https://blog.langchain.com/planning-agents/" target="_blank">Plan-and-Execute Agents</a>. LangChain Blog.</li>
+
+            <li id="ref21">Zhang, Y., et al. (2024). <a href="https://openreview.net/pdf/237b412263c0d091153c3cf0b6cc3424bdab97ae.pdf" target="_blank">ToolTree: Deliberate Tool Selection for LLM Agents via Monte Carlo Tree Search</a>. OpenReview.</li>
+
+            <li id="ref22">Chen, Z., et al. (2024). <a href="https://arxiv.org/abs/2507.01489" target="_blank">Agent-as-Tool: A Study on the Hierarchical Decision Making with Reinforcement Learning</a>. arXiv:2507.01489.</li>
+
+            <li id="ref24">Liang, J., et al. (2025). <a href="https://arxiv.org/abs/2502.14693" target="_blank">I-MCTS: Enhancing Agentic AutoML via Introspective Monte Carlo Tree Search</a>. arXiv:2502.14693.</li>
+
+            <li id="ref25">Zhang, L., et al. (2025). <a href="https://arxiv.org/abs/2502.00955" target="_blank">Efficient Multi-Agent System Training with Data Influence-Oriented Tree Search</a>. arXiv:2502.00955.</li>
+
+            <li id="ref26">Browne, C. B., et al. (2012). A Survey of Monte Carlo Tree Search Methods. IEEE Transactions on Computational Intelligence and AI in Games, 4(1), 1-43.</li>
+
+            <li id="ref28">Rafailov, R., et al. (2023). <a href="https://arxiv.org/abs/2305.18290" target="_blank">Direct Preference Optimization: Your Language Model is Secretly a Reward Model</a>. NeurIPS 2023. arXiv:2305.18290.</li>
+
+            <li id="ref29">Liu, Y., et al. (2024). <a href="https://arxiv.org/abs/2510.14703" target="_blank">ToolPRM: Fine-Grained Inference Scaling of Structured Outputs for Function Calling</a>. arXiv:2510.14703.</li>
+
+            <li id="ref30">Liu, Y., et al. (2024). <a href="https://arxiv.org/abs/2510.14703" target="_blank">ToolPRM: Fine-Grained Inference Scaling of Structured Outputs for Function Calling</a>. arXiv:2510.14703.</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="text-center">
+        <a href="../blog.html" class="btn btn-outline-primary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Blog
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>&copy; 2025 Gordi (Ghodrat) Aalipour. Built with <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>.</p>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
